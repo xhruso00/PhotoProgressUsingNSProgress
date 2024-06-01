@@ -23,12 +23,10 @@ class PhotoCollectionViewCell: UICollectionViewCell {
     fileprivate let imageKeyPath = "image"
 
     fileprivate var fractionCompletedObservation: NSKeyValueObservation?
-    fileprivate var photoImportObservation: NSKeyValueObservation?
     fileprivate var imageObservation: NSKeyValueObservation?
     
     var photo: Photo? {
         willSet {
-            photoImportObservation?.invalidate()
             fractionCompletedObservation?.invalidate()
             imageObservation?.invalidate()
             
@@ -40,13 +38,15 @@ class PhotoCollectionViewCell: UICollectionViewCell {
 
         didSet {
             if let newPhoto = photo {
-                
                 fractionCompletedObservation = newPhoto.observe(\.photoImport?.progress.fractionCompleted) { [weak self] photo, photoImport  in
-                    
-                    self?.updateProgressView()
+                    OperationQueue.main.addOperation {
+                        self?.updateProgressView()
+                    }
                 }
                 imageObservation = newPhoto.observe(\Photo.image) { [weak self] _,_ in
-                    self?.updateImageView()
+                    OperationQueue.main.addOperation {
+                        self?.updateImageView()
+                    }
                 }
 //                newPhoto.addObserver(self, forKeyPath: fractionCompletedKeyPath, options: [], context: &photoCollectionViewCellObservationContext)
 //                newPhoto.addObserver(self, forKeyPath: imageKeyPath, options: [], context: &photoCollectionViewCellObservationContext)
@@ -57,25 +57,23 @@ class PhotoCollectionViewCell: UICollectionViewCell {
         }
     }
     
+    //@MainActor
     fileprivate func updateProgressView() {
-        DispatchQueue.main.async {
-            if let photoImport = self.photo?.photoImport {
-                let fraction = Float(photoImport.progress.fractionCompleted)
-                self.progressView.progress = fraction
-                self.progressView.isHidden = false
-            }
-            else {
-                self.progressView.isHidden = true
-            }
+        if let photoImport = self.photo?.photoImport {
+            let fraction = Float(photoImport.progress.fractionCompleted)
+            self.progressView.progress = fraction
+            self.progressView.isHidden = false
+        }
+        else {
+            self.progressView.isHidden = true
         }
     }
 
+    //@MainActor
     fileprivate func updateImageView() {
-        DispatchQueue.main.async {
-            UIView.transition(with: self.imageView, duration: 0.5, options: .transitionCrossDissolve, animations: {
-                self.imageView.image = self.photo?.image
-            }, completion: nil)
-        }
+        UIView.transition(with: self.imageView, duration: 0.5, options: .transitionCrossDissolve, animations: {
+            self.imageView.image = self.photo?.image
+        }, completion: nil)
     }
     
     // MARK: Key-Value Observing
@@ -95,4 +93,9 @@ class PhotoCollectionViewCell: UICollectionViewCell {
 //            }
 //        }
 //    }
+    
+    deinit {
+        fractionCompletedObservation?.invalidate()
+        imageObservation?.invalidate()
+    }
 }
