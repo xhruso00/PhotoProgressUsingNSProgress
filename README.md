@@ -31,10 +31,10 @@ The app presents a collection view of photos, which will initially be placeholde
 
 ### Build
 
-Xcode 8.0, Swift 3.0, iOS 10.0 SDK
+Xcode 15.0, Swift 5.0, iOS 17.0 SDK
 
 ### Runtime
 
-iOS 10.0
+iOS 17.0
 
 Copyright (C) 2016 Apple Inc. All rights reserved.
