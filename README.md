@@ -1,3 +1,10 @@
+Updated for Xcode 15 and Swift 5.
+
+Changed old fashioned addObserver for NSKeyValueObservation
+
+Marked image and photoImport as @objc 
+
+
 # PhotoProgress: Using NSProgress
 
 This sample demonstrates how to create and compose NSProgress objects, and show their progress in your app.
